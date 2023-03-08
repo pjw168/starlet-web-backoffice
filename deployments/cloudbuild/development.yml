@@ -1,0 +1,39 @@
+steps:
+  # build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    # entrypoint: 'bash'
+    args:
+      [
+        'build',
+        '--build-arg',
+        'ENV=${_ENV_}',
+        '-t',
+        'gcr.io/$PROJECT_ID/${_PROJECT_}',
+        '.',
+      ]
+    # push the container image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/${_PROJECT_}']
+    # Deploy container image to Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      [
+        'run',
+        'deploy',
+        '${_PROJECT_}',
+        '--image',
+        'gcr.io/$PROJECT_ID/${_PROJECT_}',
+        '--region',
+        'asia-east1',
+        '--platform',
+        'managed',
+        '--quiet',
+        '--allow-unauthenticated',
+        '--max-instances=29',
+      ]
+images:
+  - gcr.io/$PROJECT_ID/${_PROJECT_}
+
+substitutions:
+  _PROJECT_: starlet-web-backoffice
+  _ENV_: development
